@@ -1,0 +1,11 @@
+## Interface: 100207
+## Title: ArenaLog
+## Notes: ArenaLog allows you to check your arena rating changes and see additional information about battles
+## Author: FerventReaper
+## Version: 1.0.0
+## RequiredDeps:
+## X-Curse-Project-ID: 999999
+## SavedVariables:
+## SavedVariablesPerCharacter: ArenaLogDB
+
+ArenaLog.lua
