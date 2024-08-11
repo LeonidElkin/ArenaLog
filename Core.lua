@@ -3,15 +3,62 @@ local options = nil
 local AceGUI = LibStub("AceGUI-3.0")
 local ArenaLog = LibStub("AceAddon-3.0"):NewAddon(AddonTable, AddonName, "AceConsole-3.0", "AceEvent-3.0")
 
-local function DrawArenaHistoryFrame(group)
+local function CreateLabeledGroup(label, value)
+    local group = AceGUI:Create("SimpleGroup")
+    group:SetLayout("List")
+    group:SetWidth(150) -- Ширина группы
+
+    local labelWidget = AceGUI:Create("Label")
+    labelWidget:SetText(label)
+    labelWidget:SetFontObject(GameFontHighlight)
+    group:AddChild(labelWidget)
+
+    local spacer = AceGUI:Create("Label")
+    spacer:SetText(" ") -- Пустое пространство
+    spacer:SetFullWidth(true)
+    spacer:SetHeight(5) -- Высота отступа
+    group:AddChild(spacer)
+
+    local valueWidget = AceGUI:Create("Label")
+    valueWidget:SetText(value)
+    group:AddChild(valueWidget)
+
+    return group
+end
+
+local function DrawArenaHistoryFrame(container, arenaType)
+    if arenaType == "2x2" then
+        local scroll = AceGUI:Create("ScrollFrame")
+        scroll:SetLayout("Flow")
+        container:AddChild(scroll)
+
+        local singleGameFrame = AceGUI:Create("InlineGroup")
+        singleGameFrame:SetFullWidth(true)
+        singleGameFrame:SetLayout("Flow")
+        container:AddChild(singleGameFrame)
+
+        singleGameFrame:AddChild(CreateLabeledGroup("Time", "2024-08-10 15:30"))
+
+        singleGameFrame:AddChild(CreateLabeledGroup("Teams", "Team A vs Team B"))
+
+        singleGameFrame:AddChild(CreateLabeledGroup("Rating Change", "+25"))
+
+        local viewButton = AceGUI:Create("Button")
+        viewButton:SetText("View Details")
+        viewButton:SetWidth(120)
+        singleGameFrame:AddChild(viewButton)
+    end
+
+    if arenaType == "3x3" then
+
+    end
+end
+
+local function DrawProfilesFrame()
     --TODO
 end
 
-local function DrawProfilesFrame(group)
-    --TODO
-end
-
-local function DrawSettingsFrame(group)
+local function DrawSettingsFrame()
     --TODO
 end
 
@@ -19,7 +66,7 @@ local function InitiateMainFrame()
     local function SelectGroup(container, event, group)
         container:ReleaseChildren()
         if group == "2x2" or group == "3x3" then
-            DrawArenaHistoryFrame(group)
+            DrawArenaHistoryFrame(container, group)
         elseif group == "settings" then
             DrawSettingsFrame()
         elseif group == "profiles" then
@@ -28,9 +75,10 @@ local function InitiateMainFrame()
     end
 
     local frame = AceGUI:Create("Frame")
-    frame:IsShown()
     frame:SetTitle("ArenaLog")
     frame:SetLayout("Fill")
+    frame:SetHeight(600)
+    frame:SetWidth(900)
     frame:SetCallback("OnClose",
         function (widget)
             AceGUI:Release(widget)
@@ -47,7 +95,7 @@ local function InitiateMainFrame()
         { text = "Profiles", value = "profiles" }
     })
     tab:SetCallback("OnGroupSelected", SelectGroup)
-    tab:SelectTab("tab1")
+    tab:SelectTab("2x2")
 
     frame:AddChild(tab)
 
