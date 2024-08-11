@@ -6,7 +6,7 @@ local ArenaLog = LibStub("AceAddon-3.0"):NewAddon(AddonTable, AddonName, "AceCon
 local function CreateLabeledGroup(label, value)
     local group = AceGUI:Create("SimpleGroup")
     group:SetLayout("List")
-    group:SetWidth(150) -- Ширина группы
+    group:SetWidth(150)
 
     local labelWidget = AceGUI:Create("Label")
     labelWidget:SetText(label)
@@ -14,9 +14,9 @@ local function CreateLabeledGroup(label, value)
     group:AddChild(labelWidget)
 
     local spacer = AceGUI:Create("Label")
-    spacer:SetText(" ") -- Пустое пространство
+    spacer:SetText(" ")
     spacer:SetFullWidth(true)
-    spacer:SetHeight(5) -- Высота отступа
+    spacer:SetHeight(5)
     group:AddChild(spacer)
 
     local valueWidget = AceGUI:Create("Label")
