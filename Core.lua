@@ -1,12 +1,64 @@
 local AddonName, AddonTable = ...
 local options = nil
 local AceGUI = LibStub("AceGUI-3.0")
-local ArenaLog = LibStub("AceAddon-3.0"):NewAddon(AddonTable, AddonName, "AceConsole-3.0", "AceEvent-3.0")
+
+ArenaLog = LibStub("AceAddon-3.0"):NewAddon(AddonTable, AddonName, "AceConsole-3.0", "AceEvent-3.0")
+
+AddonTable.specIDs = {
+    deathKnight = {
+        Blood = 250,
+        Frost = 251,
+        Unholy = 252
+    },
+    demonHunter = {
+        Havoc = 577,
+        Vengeance = 581
+    }
+}
+
+local specIcons = AddonTable.specIDs
+
+local function CreateTeamWidget(team, justify)
+    local teamGroup = AceGUI:Create("SimpleGroup")
+    teamGroup:SetLayout("Flow")
+    teamGroup:SetWidth(100)
+    teamGroup:SetPoint(justify)
+
+    for _, spec in ipairs(team) do
+        local iconWidget = AceGUI:Create("Icon")
+        local id, name, description, icon, role, classFile, className = GetSpecializationInfoByID(spec)
+        iconWidget:SetImage(icon)
+        iconWidget:SetImageSize(36, 36)
+        iconWidget:SetWidth(40)
+        teamGroup:AddChild(iconWidget)
+    end
+
+    return teamGroup
+end
+
+local function CreateTeamsGroup(team1, team2)
+    local teams = AceGUI:Create("SimpleGroup")
+    teams:SetWidth(300)
+    teams:SetLayout("Flow")
+
+    teams:AddChild(CreateTeamWidget(team1, "LEFT"))
+
+    local vsLabel = AceGUI:Create("Label")
+    vsLabel:SetText("vs")
+    vsLabel:SetWidth(30)
+    vsLabel:SetPoint("CENTER")
+    vsLabel:SetFontObject(GameFontNormalLarge)
+    teams:AddChild(vsLabel)
+
+    teams:AddChild(CreateTeamWidget(team2, "RIGHT"))
+
+    return teams
+end
 
 local function CreateLabeledGroup(label, value)
     local group = AceGUI:Create("SimpleGroup")
     group:SetLayout("List")
-    group:SetWidth(150)
+    group:SetWidth(120)
 
     local labelWidget = AceGUI:Create("Label")
     labelWidget:SetText(label)
@@ -26,7 +78,7 @@ local function CreateLabeledGroup(label, value)
     return group
 end
 
-local function DrawArenaHistoryFrame(container, arenaType)
+local function CreateArenaHistoryWidget(container, arenaType)
     if arenaType == "2x2" then
         local scroll = AceGUI:Create("ScrollFrame")
         scroll:SetLayout("Flow")
@@ -38,9 +90,7 @@ local function DrawArenaHistoryFrame(container, arenaType)
         container:AddChild(singleGameFrame)
 
         singleGameFrame:AddChild(CreateLabeledGroup("Time", "2024-08-10 15:30"))
-
-        singleGameFrame:AddChild(CreateLabeledGroup("Teams", "Team A vs Team B"))
-
+        singleGameFrame:AddChild(CreateTeamsGroup({ 250, 251 }, { 252, 252 }))
         singleGameFrame:AddChild(CreateLabeledGroup("Rating Change", "+25"))
 
         local viewButton = AceGUI:Create("Button")
@@ -66,7 +116,7 @@ local function InitiateMainFrame()
     local function SelectGroup(container, event, group)
         container:ReleaseChildren()
         if group == "2x2" or group == "3x3" then
-            DrawArenaHistoryFrame(container, group)
+            CreateArenaHistoryWidget(container, group)
         elseif group == "settings" then
             DrawSettingsFrame()
         elseif group == "profiles" then
@@ -78,7 +128,7 @@ local function InitiateMainFrame()
     frame:SetTitle("ArenaLog")
     frame:SetLayout("Fill")
     frame:SetHeight(600)
-    frame:SetWidth(900)
+    frame:SetWidth(1200)
     frame:SetCallback("OnClose",
         function (widget)
             AceGUI:Release(widget)
