@@ -12,3 +12,4 @@ embeds.xml
 
 locales.lua
 Core.lua
+Frame.lua
