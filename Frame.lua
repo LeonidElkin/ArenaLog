@@ -6,9 +6,11 @@ local function CreateTeamWidget(team, justify)
     teamGroup:SetWidth(100)
     teamGroup:SetPoint(justify)
 
-    for _, spec in ipairs(team) do
+    for _, info in pairs(team) do
         local iconWidget = AceGUI:Create("Icon")
-        local id, name, description, icon, role, classFile, className = GetSpecializationInfoByID(spec)
+        local id, name, description, icon, role, classFile, className = GetSpecializationInfoByID(info.spec)
+        --There are redundant variablesonly for now
+        --They could be deleted in future idk
         iconWidget:SetImage(icon)
         iconWidget:SetImageSize(36, 36)
         iconWidget:SetWidth(40)
@@ -60,14 +62,14 @@ local function CreateLabeledGroup(label, value)
     return group
 end
 
-local function CreateGameFrame(time, rc, team1, team2)
+local function CreateGameFrame(game)
     local singleGameFrame = AceGUI:Create("InlineGroup")
     singleGameFrame:SetFullWidth(true)
     singleGameFrame:SetLayout("Flow")
 
-    singleGameFrame:AddChild(CreateLabeledGroup("Time", time))
-    singleGameFrame:AddChild(CreateTeamsGroup(team1, team2))
-    singleGameFrame:AddChild(CreateLabeledGroup("Rating Change", rc))
+    singleGameFrame:AddChild(CreateLabeledGroup("Time", game.time))
+    singleGameFrame:AddChild(CreateTeamsGroup(game.alliedTeam, game.enemyTeam))
+    singleGameFrame:AddChild(CreateLabeledGroup("Rating Change", game.ratingChange))
 
     local viewButton = AceGUI:Create("Button")
     viewButton:SetText("View Details")
@@ -77,7 +79,7 @@ local function CreateGameFrame(time, rc, team1, team2)
     return singleGameFrame
 end
 
-local function CreateArenaHistoryWidget(container)
+function ArenaLog:CreateArenaHistoryWidget(container, group)
     local arenaHistoryWidget = AceGUI:Create("SimpleGroup")
     arenaHistoryWidget:SetFullWidth(true)
     arenaHistoryWidget:SetFullHeight(true)
@@ -88,23 +90,31 @@ local function CreateArenaHistoryWidget(container)
     scroll:SetLayout("Flow")
     arenaHistoryWidget:AddChild(scroll)
 
-    for i = 1, 10 do
-        scroll:AddChild(CreateGameFrame("2024-08-10 15:30", "+25", { 250, 251 }, { 252, 252 }))
+    for _, game in ipairs(group == "2x2" and self.db.char.game2x2History or self.db.char.game3x3History) do
+        scroll:AddChild(CreateGameFrame(game))
     end
 end
 
-function InitiateMainFrame()
-    local function SelectGroup(container, event, group)
-        container:ReleaseChildren()
-        if group == "2x2" or group == "3x3" then
-            CreateArenaHistoryWidget(container)
-        elseif group == "settings" then
-            DrawSettingsFrame()
-        elseif group == "profiles" then
-            DrawProfilesFrame()
-        end
-    end
+local function DrawProfilesFrame()
+    --TODO
+end
 
+local function DrawSettingsFrame()
+    --TODO
+end
+
+local function SelectGroup(container, event, group)
+    container:ReleaseChildren()
+    if group == "2x2" or group == "3x3" then
+        ArenaLog:CreateArenaHistoryWidget(container, group)
+    elseif group == "settings" then
+        DrawSettingsFrame()
+    elseif group == "profiles" then
+        DrawProfilesFrame()
+    end
+end
+
+function ArenaLog:InitiateMainFrame()
     local frame = AceGUI:Create("Frame")
     frame:SetTitle("ArenaLog")
     frame:SetLayout("Fill")
@@ -129,6 +139,4 @@ function InitiateMainFrame()
     tab:SelectTab("2x2")
 
     frame:AddChild(tab)
-
-    return frame
 end
