@@ -8,10 +8,7 @@ local function CreateTeamWidget(team, justify)
 
     for _, info in pairs(team) do
         local iconWidget = AceGUI:Create("Icon")
-        local id, name, description, icon, role, classFile, className = GetSpecializationInfoByID(info.spec)
-        --There are redundant variablesonly for now
-        --They could be deleted in future idk
-        iconWidget:SetImage(icon)
+        iconWidget:SetImage(team.stats.iconName)
         iconWidget:SetImageSize(36, 36)
         iconWidget:SetWidth(40)
         teamGroup:AddChild(iconWidget)
@@ -67,7 +64,7 @@ local function CreateGameFrame(game)
     singleGameFrame:SetFullWidth(true)
     singleGameFrame:SetLayout("Flow")
 
-    singleGameFrame:AddChild(CreateLabeledGroup("Time", game.time))
+    singleGameFrame:AddChild(CreateLabeledGroup("Date", tostring(game.date.monthDay) .. tostring(game.date.year)))
     singleGameFrame:AddChild(CreateTeamsGroup(game.alliedTeam, game.enemyTeam))
     singleGameFrame:AddChild(CreateLabeledGroup("Rating Change", game.ratingChange))
 
@@ -90,8 +87,10 @@ function ArenaLog:CreateArenaHistoryWidget(container, group)
     scroll:SetLayout("Flow")
     arenaHistoryWidget:AddChild(scroll)
 
-    for _, game in ipairs(group == "2x2" and self.db.char.game2x2History or self.db.char.game3x3History) do
-        scroll:AddChild(CreateGameFrame(game))
+    local db = self.db.char.gameHistory
+
+    for i = #db, 1, -1 do
+        scroll:AddChild(CreateGameFrame(db[i]))
     end
 end
 

@@ -13,37 +13,13 @@ function ArenaLog:HandleSlashCommands(input)
     ArenaLog:InitiateMainFrame()
 end
 
-local gameExample = {
-    time = "2024-08-10 15:30",
-    ratingChange = 25,
-    alliedTeam = {
-        player = { spec = 250 },
-        party1 = { spec = 250 }
-    },
-    enemyTeam = {
-        arena1 = { spec = 250 },
-        arena2 = { spec = 250 }
-    }
-}
-
 function ArenaLog:SetUpDb()
-    if not self.db.char.game2x2History then
-        self.db.char.game2x2History = {}
-    end
-
-    if not self.db.char.game3x3History then
-        self.db.char.game3x3History = {}
-    end
-
-    --experiment below
-    for i = 1, 10 do
-        self.db.char.game2x2History[i] = gameExample
+    if not self.db.char.gameHistory then
+        self.db.char.gameHistory = {}
     end
 end
 
 function ArenaLog:OnInitialize()
-    ArenaLog:RegisterChatCommand("arenalog", "HandleSlashCommands")
-    ArenaLog:RegisterChatCommand("al", "HandleSlashCommands")
     ArenaLog.isMainFrameShown = false
 
     self.db = AceDB:New("ArenaLogDB")
@@ -51,9 +27,68 @@ function ArenaLog:OnInitialize()
 end
 
 function ArenaLog:OnEnable()
-    --TODO
+    ArenaLog:RegisterChatCommand("arenalog", "HandleSlashCommands")
+    ArenaLog:RegisterChatCommand("al", "HandleSlashCommands")
+
+    ArenaLog:RegisterEvent("PVP_MATCH_COMPLETE", "GetArenaInfo")
+    ArenaLog:RegisterEvent("PLAYER_JOINED_PVP_MATCH", "GetArenaTime")
 end
 
-function ArenaLog:OnDisable()
-    --TODO
+function ArenaLog:GetArenaTime()
+    if C_PvP.IsRatedArena() then
+        self.db.char.gameHistory[#self.db.char.gameHistory + 1] = { date = C_DateAndTime.GetCurrentCalendarTime() }
+    end
+end
+
+function ArenaLog:GetArenaInfo()
+    if C_PvP.IsRatedArena() then
+        local game = {}
+        local numScores = GetNumBattlefieldScores()
+
+        game.date = self.db.char.gameHistory[#self.db.char.gameHistory].date
+        game.alliedTeam = {}
+        game.enemyTeam = {}
+        game.duration = C_PvP.GetMatchDuration()
+
+        local infos = {}
+
+        for i = 1, numScores do
+            infos[i] = C_PvP.GetScoreInfo(i)
+            if UnitGUID("player") == infos[i].guid then
+                game.ratingChange = infos[i].ratingChange
+                -- [0 - green team, 1 - yellow team]
+                game.alliedTeam.teamIndex = infos[i].faction
+                game.enemyTeam.teamIndex = 1 - infos[i].faction
+            end
+        end
+
+        local myTeamInfo = C_PvP.GetTeamInfo(game.alliedTeam.teamIndex)
+        local enemyTeamInfo = C_PvP.GetTeamInfo(game.enemyTeam.teamIndex)
+
+        if myTeamInfo and enemyTeamInfo then
+            game.type = max(myTeamInfo.size, enemyTeamInfo.size)
+            game.alliedTeam.rating = myTeamInfo.rating
+            game.enemyTeam.rating = enemyTeamInfo.rating
+        else
+            game.type = numScores / 2
+            game.alliedTeam.rating = nil
+            game.enemyTeam.rating = nil
+        end
+
+        local myTeamCounter = 1
+        local enemyTeamCounter = 1
+
+        for _, v in ipairs(infos) do
+            if UnitGUID("player") == v.guid then
+                game.alliedTeam.player = v
+            elseif v.faction == game.alliedTeam.teamIndex then
+                game.alliedTeam["party" .. myTeamCounter] = v
+                myTeamCounter = myTeamCounter + 1
+            else
+                game.enemyTeam["arena" .. enemyTeamCounter] = v
+            end
+        end
+
+        self.db.char.gameHistory[#self.db.char.gameHistory] = game
+    end
 end
