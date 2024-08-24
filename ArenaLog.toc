@@ -13,3 +13,6 @@ embeds.xml
 locales.lua
 Core.lua
 UI.lua
+Player.lua
+Team.lua 
+Game.lua

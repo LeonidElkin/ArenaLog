@@ -1,16 +1,21 @@
 local AddonName, AddonTable = ...
-local AceDB = LibStub("AceDB-3.0")
 
 ArenaLog = LibStub("AceAddon-3.0"):NewAddon(AddonTable, AddonName, "AceConsole-3.0", "AceEvent-3.0")
 
+--setuping addon entities
+ArenaLog.UI = {}
+ArenaLog.Player = {}
+ArenaLog.Game = {}
+ArenaLog.Team = {}
+-----------------------
+
+local UI = ArenaLog.UI
+
+local AceDB = LibStub("AceDB-3.0")
+
 function ArenaLog:HandleSlashCommands(input)
-    if ArenaLog.isMainFrameShown then
-        return
-    end
-
-    ArenaLog.isMainFrameShown = true
-
-    ArenaLog:InitiateMainFrame()
+    UI:InitiateMainFrame()
+    ArenaLog:Print(C_PlayerInfo.GetName(PlayerLocation:CreateFromGUID(UnitGUID("player"))))
 end
 
 function ArenaLog:SetUpDb()
@@ -20,8 +25,6 @@ function ArenaLog:SetUpDb()
 end
 
 function ArenaLog:OnInitialize()
-    ArenaLog.isMainFrameShown = false
-
     self.db = AceDB:New("ArenaLogDB")
     ArenaLog:SetUpDb()
 end
@@ -48,7 +51,7 @@ function ArenaLog:GetArenaInfo()
         game.date = self.db.char.gameHistory[#self.db.char.gameHistory].date
         game.alliedTeam = {}
         game.enemyTeam = {}
-        game.duration = C_PvP.GetMatchDuration()
+        game.duration = C_PvP.GetActiveMatchDuration()
 
         local infos = {}
 
@@ -56,7 +59,6 @@ function ArenaLog:GetArenaInfo()
             infos[i] = C_PvP.GetScoreInfo(i)
             if UnitGUID("player") == infos[i].guid then
                 game.ratingChange = infos[i].ratingChange
-                -- [0 - green team, 1 - yellow team]
                 game.alliedTeam.teamIndex = infos[i].faction
                 game.enemyTeam.teamIndex = 1 - infos[i].faction
             end

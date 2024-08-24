@@ -1,4 +1,6 @@
 local AceGUI = LibStub("AceGUI-3.0")
+local UI = ArenaLog.UI
+UI.isMainFrameShown = false
 
 local function CreateTeamWidget(team, justify)
     local teamGroup = AceGUI:Create("SimpleGroup")
@@ -8,7 +10,8 @@ local function CreateTeamWidget(team, justify)
 
     for _, info in pairs(team) do
         local iconWidget = AceGUI:Create("Icon")
-        iconWidget:SetImage(team.stats.iconName)
+        -- local id, name, description, icon, role, classFile, className = GetSpecializationInfoByID(info.spec)
+        iconWidget:SetImage(info.stats.iconName)
         iconWidget:SetImageSize(36, 36)
         iconWidget:SetWidth(40)
         teamGroup:AddChild(iconWidget)
@@ -76,7 +79,7 @@ local function CreateGameFrame(game)
     return singleGameFrame
 end
 
-function ArenaLog:CreateArenaHistoryWidget(container, group)
+function UI:CreateArenaHistoryWidget(container, group)
     local arenaHistoryWidget = AceGUI:Create("SimpleGroup")
     arenaHistoryWidget:SetFullWidth(true)
     arenaHistoryWidget:SetFullHeight(true)
@@ -105,7 +108,7 @@ end
 local function SelectGroup(container, event, group)
     container:ReleaseChildren()
     if group == "2x2" or group == "3x3" then
-        ArenaLog:CreateArenaHistoryWidget(container, group)
+        UI:CreateArenaHistoryWidget(container, group)
     elseif group == "settings" then
         DrawSettingsFrame()
     elseif group == "profiles" then
@@ -113,7 +116,13 @@ local function SelectGroup(container, event, group)
     end
 end
 
-function ArenaLog:InitiateMainFrame()
+function UI:InitiateMainFrame()
+    if UI.isMainFrameShown then
+        return
+    end
+
+    UI.isMainFrameShown = true
+
     local frame = AceGUI:Create("Frame")
     frame:SetTitle("ArenaLog")
     frame:SetLayout("Fill")
@@ -122,7 +131,7 @@ function ArenaLog:InitiateMainFrame()
     frame:SetCallback("OnClose",
         function (widget)
             AceGUI:Release(widget)
-            ArenaLog.isMainFrameShown = false
+            UI.isMainFrameShown = false
         end
     )
 
