@@ -15,7 +15,6 @@ local AceDB = LibStub("AceDB-3.0")
 
 function ArenaLog:HandleSlashCommands(input)
     UI:InitiateMainFrame()
-    ArenaLog:Print(C_PlayerInfo.GetName(PlayerLocation:CreateFromGUID(UnitGUID("player"))))
 end
 
 function ArenaLog:SetUpDb()

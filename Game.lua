@@ -2,6 +2,8 @@ local Game = ArenaLog.Game
 local Team = ArenaLog.Team
 local Player = ArenaLog.Player
 
+Game.__index = Game
+
 function Game.New()
     local self = setmetatable({}, Game)
 

@@ -1,5 +1,7 @@
 local Team = ArenaLog.Team
 
+Team.__index = Team
+
 function Team.New()
     local self = setmetatable({}, Team)
 
