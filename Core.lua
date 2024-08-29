@@ -2,15 +2,7 @@ local AddonName, AddonTable = ...
 
 ArenaLog = LibStub("AceAddon-3.0"):NewAddon(AddonTable, AddonName, "AceConsole-3.0", "AceEvent-3.0")
 
---setuping addon entities
-ArenaLog.UI = {}
-ArenaLog.Player = {}
-ArenaLog.Game = {}
-ArenaLog.Team = {}
------------------------
-
 local UI = ArenaLog.UI
-
 local AceDB = LibStub("AceDB-3.0")
 
 function ArenaLog:HandleSlashCommands(input)

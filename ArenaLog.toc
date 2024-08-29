@@ -10,8 +10,10 @@
 
 embeds.xml
 
-locales.lua
+Header.lua
+Locales.lua
 Core.lua
+Logger.lua
 UI.lua
 Player.lua
 Team.lua 
