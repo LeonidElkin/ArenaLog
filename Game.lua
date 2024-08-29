@@ -1,6 +1,5 @@
 local Game = ArenaLog.Game
 local Team = ArenaLog.Team
-local Player = ArenaLog.Player
 
 Game.__index = Game
 
@@ -13,17 +12,17 @@ function Game.New()
     self.score = nil
     self.zone = nil
 
-    self.aliedTeam = Team.New()
-    self.aliedTeam.players.player = Player.new("player")
-    for i = 1, 2 do
-        local id = "party" .. i
-        self.aliedTeam.players[id] = Player.New(id)
-    end
+    self.aliedTeam = Team.New(true)
+    self.enemyTeam = Team.New(false)
 
-    self.enemyTeam = Team.New()
-    for i = 1, 3 do
-        local id = "arena" .. i
-        self.aliedTeam.players[id] = Player.New(id)
-    end
     return self
+end
+
+function Game:UpdateZone()
+    self.zone = GetRealZoneText()
+end
+
+function Game:UpdatePlayers()
+    self.aliedTeam:UpdateTeam()
+    self.enemyTeam:UpdateTeam()
 end

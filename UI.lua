@@ -1,6 +1,5 @@
 local AceGUI = LibStub("AceGUI-3.0")
 local UI = ArenaLog.UI
-UI.isMainFrameShown = false
 
 local function CreateTeamWidget(team, justify)
     local teamGroup = AceGUI:Create("SimpleGroup")
