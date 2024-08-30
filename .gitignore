@@ -39,3 +39,8 @@ luac.out
 *.x86_64
 *.hex
 
+# IDE
+.vscode/*
+
+# Libs folder (Shouldn't be commited. There is a .pkgmeta file)
+Libs/*
