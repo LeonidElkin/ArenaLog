@@ -12,6 +12,10 @@ Logger.types = {
     info = {
         msg = "INFO",
         color = "cff00ff00"
+    },
+    debug = {
+        msg = "DEBUG",
+        color = "cff00ff00"
     }
 }
 
@@ -38,4 +42,8 @@ end
 
 function Logger:Info(msg, ...)
     self:_log("info", msg, ...)
+end
+
+function Logger:Debug(msg, ...)
+    self:_log("debug", msg, ...)
 end

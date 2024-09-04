@@ -1,7 +1,5 @@
 local _, AddonTable = ...
 
-local Logger = AddonTable.Logger
-
 local Team = ArenaLog.Team
 local Player = ArenaLog.Player
 
@@ -36,13 +34,10 @@ end
 
 function Team:UpdateTeamInfo()
     for _, v in pairs(self.players) do
-        v:UpdatePlayerInfo(nil)
-        if v.faction then
+        if v.faction and not self.teamIndex then
             self.teamIndex = v.faction
         end
-        if self.teamIndex and not v.faction and v.faction ~= self.teamIndex then
-            Logger:Error("%s and their team have different team indices!", v.id)
-        end
+        v:GetPlayerArenaInfo()
     end
 
     local info = C_PvP.GetTeamInfo(self.teamIndex)

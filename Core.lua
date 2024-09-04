@@ -3,6 +3,9 @@ local AddonName, AddonTable = ...
 ArenaLog = LibStub("AceAddon-3.0"):NewAddon(AddonTable, AddonName, "AceConsole-3.0", "AceEvent-3.0")
 
 local UI = ArenaLog.UI
+local Player = ArenaLog.Player
+local Game = ArenaLog.Game
+local LGIST = LibStub:GetLibrary("LibGroupInSpecT-1.1")
 local AceDB = LibStub("AceDB-3.0")
 
 function ArenaLog:HandleSlashCommands(input)
@@ -13,6 +16,7 @@ function ArenaLog:SetUpDb()
     if not self.db.char.gameHistory then
         self.db.char.gameHistory = {}
     end
+    self.db.char.currentMatch = self.db.char.currentMatch or nil
 end
 
 function ArenaLog:OnInitialize()
@@ -21,67 +25,55 @@ function ArenaLog:OnInitialize()
 end
 
 function ArenaLog:OnEnable()
+    ArenaLog.currentMatch = nil
+
     ArenaLog:RegisterChatCommand("arenalog", "HandleSlashCommands")
     ArenaLog:RegisterChatCommand("al", "HandleSlashCommands")
 
-    ArenaLog:RegisterEvent("PVP_MATCH_COMPLETE", "GetArenaInfo")
-    ArenaLog:RegisterEvent("PLAYER_JOINED_PVP_MATCH", "GetArenaTime")
+    ArenaLog:RegisterEvent("PVP_MATCH_COMPLETE")
+    ArenaLog:RegisterEvent("PLAYER_ENTERING_WORLD")
+    ArenaLog:RegisterEvent("PLAYER_JOINED_PVP_MATCH")
+    ArenaLog:RegisterEvent("ARENA_OPPONENT_UPDATE")
+
+    LGIST.RegisterCallback(ArenaLog, "GroupInSpecT_Update", "ARENA_ALLY_UPDATE")
 end
 
-function ArenaLog:GetArenaTime()
-    if C_PvP.IsRatedArena() then
-        self.db.char.gameHistory[#self.db.char.gameHistory + 1] = { date = C_DateAndTime.GetCurrentCalendarTime() }
+-- Events handlers
+function ArenaLog:PLAYER_JOINED_PVP_MATCH(event)
+    ArenaLog:OnArenaStart()
+end
+
+function ArenaLog:PLAYER_ENTERING_WORLD(event, isInitialLogin, isReloadingUi)
+    ArenaLog:OnArenaStart()
+end
+
+function ArenaLog:PVP_MATCH_COMPLETE(event, winner, duration)
+    ArenaLog:OnArenaEnd(winner, duration)
+end
+
+function ArenaLog:ARENA_ALLY_UPDATE(event, guid, id, info)
+    if C_PvP.IsRatedArena() and self.db.char.currentMatch ~= nil then
+        self.db.char.currentMatch.alliedTeam.players[id]:UpdateAllyPlayerInfo(guid, id, info)
     end
 end
 
-function ArenaLog:GetArenaInfo()
-    if C_PvP.IsRatedArena() then
-        local game = {}
-        local numScores = GetNumBattlefieldScores()
+function ArenaLog:ARENA_OPPONENT_UPDATE(event, id, reason)
+    if C_PvP.IsRatedArena() and reason == "seen" then
+        self.db.char.currentMatch.enemyTeam.players[id]:UpdateEnemyPlayerInfo()
+    end
+end
 
-        game.date = self.db.char.gameHistory[#self.db.char.gameHistory].date
-        game.alliedTeam = {}
-        game.enemyTeam = {}
-        game.duration = C_PvP.GetActiveMatchDuration()
+function ArenaLog:OnArenaStart()
+    if self.db.char.currentMatch == nil and C_PvP.IsRatedArena() then
+        self.db.char.currentMatch = Game.New()
+        self.db.char.currentMatch:UpdateZone()
+    end
+end
 
-        local infos = {}
-
-        for i = 1, numScores do
-            infos[i] = C_PvP.GetScoreInfo(i)
-            if UnitGUID("player") == infos[i].guid then
-                game.ratingChange = infos[i].ratingChange
-                game.alliedTeam.teamIndex = infos[i].faction
-                game.enemyTeam.teamIndex = 1 - infos[i].faction
-            end
-        end
-
-        local myTeamInfo = C_PvP.GetTeamInfo(game.alliedTeam.teamIndex)
-        local enemyTeamInfo = C_PvP.GetTeamInfo(game.enemyTeam.teamIndex)
-
-        if myTeamInfo and enemyTeamInfo then
-            game.type = max(myTeamInfo.size, enemyTeamInfo.size)
-            game.alliedTeam.rating = myTeamInfo.rating
-            game.enemyTeam.rating = enemyTeamInfo.rating
-        else
-            game.type = numScores / 2
-            game.alliedTeam.rating = nil
-            game.enemyTeam.rating = nil
-        end
-
-        local myTeamCounter = 1
-        local enemyTeamCounter = 1
-
-        for _, v in ipairs(infos) do
-            if UnitGUID("player") == v.guid then
-                game.alliedTeam.player = v
-            elseif v.faction == game.alliedTeam.teamIndex then
-                game.alliedTeam["party" .. myTeamCounter] = v
-                myTeamCounter = myTeamCounter + 1
-            else
-                game.enemyTeam["arena" .. enemyTeamCounter] = v
-            end
-        end
-
-        self.db.char.gameHistory[#self.db.char.gameHistory] = game
+function ArenaLog:OnArenaEnd(winner, duration)
+    if self.db.char.currentMatch ~= nil then
+        self.db.char.currentMatch:Finish(winner, duration)
+        self.db.char.gameHistory[#self.db.char.gameHistory + 1] = self.db.char.currentMatch
+        self.db.char.currentMatch = nil
     end
 end
