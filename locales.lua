@@ -1,0 +1,3 @@
+local AddonName, AddonTable = ...
+local L = LibStub("AceLocale-3.0"):NewLocale(AddonName, "enUS", true)
+AddonTable.L = L
