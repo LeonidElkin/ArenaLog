@@ -9,7 +9,6 @@ local function CreateTeamWidget(team, justify)
 
     for _, info in pairs(team) do
         local iconWidget = AceGUI:Create("Icon")
-        -- local id, name, description, icon, role, classFile, className = GetSpecializationInfoByID(info.spec)
         iconWidget:SetImage(info.stats.iconName)
         iconWidget:SetImageSize(36, 36)
         iconWidget:SetWidth(40)
@@ -96,22 +95,10 @@ function UI:CreateArenaHistoryWidget(container, group)
     end
 end
 
-local function DrawProfilesFrame()
-    --TODO
-end
-
-local function DrawSettingsFrame()
-    --TODO
-end
-
 local function SelectGroup(container, event, group)
     container:ReleaseChildren()
     if group == "2x2" or group == "3x3" then
         UI:CreateArenaHistoryWidget(container, group)
-    elseif group == "settings" then
-        DrawSettingsFrame()
-    elseif group == "profiles" then
-        DrawProfilesFrame()
     end
 end
 

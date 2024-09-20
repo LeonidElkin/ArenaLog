@@ -3,7 +3,6 @@ local AddonName, AddonTable = ...
 ArenaLog = LibStub("AceAddon-3.0"):NewAddon(AddonTable, AddonName, "AceConsole-3.0", "AceEvent-3.0")
 
 local UI = ArenaLog.UI
-local Player = ArenaLog.Player
 local Game = ArenaLog.Game
 local LGIST = LibStub:GetLibrary("LibGroupInSpecT-1.1")
 local AceDB = LibStub("AceDB-3.0")

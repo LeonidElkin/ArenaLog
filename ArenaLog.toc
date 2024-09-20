@@ -1,4 +1,4 @@
-## Interface: 110000 
+## Interface: 110002 
 ## Title: ArenaLog
 ## Notes: ArenaLog allows you to check your arena rating changes and see additional information about battles
 ## Author: FerventReaper
