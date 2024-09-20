@@ -6,6 +6,8 @@ local UI = ArenaLog.UI
 local Game = ArenaLog.Game
 local LGIST = LibStub:GetLibrary("LibGroupInSpecT-1.1")
 local AceDB = LibStub("AceDB-3.0")
+local Logger = ArenaLog.Logger
+local Player = ArenaLog.Player
 
 function ArenaLog:HandleSlashCommands(input)
     UI:InitiateMainFrame()
@@ -24,8 +26,6 @@ function ArenaLog:OnInitialize()
 end
 
 function ArenaLog:OnEnable()
-    ArenaLog.currentMatch = nil
-
     ArenaLog:RegisterChatCommand("arenalog", "HandleSlashCommands")
     ArenaLog:RegisterChatCommand("al", "HandleSlashCommands")
 
@@ -39,33 +39,54 @@ end
 
 -- Events handlers
 function ArenaLog:PLAYER_JOINED_PVP_MATCH(event)
+    Logger:Debug("PLAYER_JOINED_PVP_MATCH")
     ArenaLog:OnArenaStart()
 end
 
-function ArenaLog:PLAYER_ENTERING_WORLD(event, isInitialLogin, isReloadingUi)
+function ArenaLog:PLAYER_ENTERING_WORLD(event, _, _)
+    Logger:Debug("PLAYER_ENTERING_WORLD")
     ArenaLog:OnArenaStart()
 end
 
 function ArenaLog:PVP_MATCH_COMPLETE(event, winner, duration)
+    Logger:Debug("PVP_MATCH_COMPLETE")
     ArenaLog:OnArenaEnd(winner, duration)
 end
 
 function ArenaLog:ARENA_ALLY_UPDATE(event, guid, id, info)
     if C_PvP.IsRatedArena() and self.db.char.currentMatch ~= nil then
+        Logger:Debug("ARENA_ALLY_UPDATE")
+        if not self.db.char.currentMatch.alliedTeam.players[id] then
+            self.db.char.currentMatch.alliedTeam.players[id] = Player.New(id)
+        end
         self.db.char.currentMatch.alliedTeam.players[id]:UpdateAllyPlayerInfo(guid, id, info)
     end
 end
 
 function ArenaLog:ARENA_OPPONENT_UPDATE(event, id, reason)
-    if C_PvP.IsRatedArena() and reason == "seen" then
+    if C_PvP.IsRatedArena() and reason == "seen" and self.db.char.currentMatch ~= nil then
+        Logger:Debug("ARENA_OPPONENT_UPDATE")
+        local isArenaPlayer = false
+        for i = 1, 3 do
+            local checkId = "arena" .. i
+            if id == checkId then
+                isArenaPlayer = true
+            end
+        end
+        if not isArenaPlayer then
+            return
+        end
+        if not self.db.char.currentMatch.enemyTeam.players[id] then
+            self.db.char.currentMatch.enemyTeam.players[id] = Player.New(id)
+        end
         self.db.char.currentMatch.enemyTeam.players[id]:UpdateEnemyPlayerInfo()
     end
 end
 
 function ArenaLog:OnArenaStart()
     if self.db.char.currentMatch == nil and C_PvP.IsRatedArena() then
+        Logger:Info("Arena Started")
         self.db.char.currentMatch = Game.New()
-        self.db.char.currentMatch:UpdateZone()
     end
 end
 
@@ -74,5 +95,6 @@ function ArenaLog:OnArenaEnd(winner, duration)
         self.db.char.currentMatch:Finish(winner, duration)
         self.db.char.gameHistory[#self.db.char.gameHistory + 1] = self.db.char.currentMatch
         self.db.char.currentMatch = nil
+        Logger:Info("Arena recorded")
     end
 end

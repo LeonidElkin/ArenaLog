@@ -3,19 +3,23 @@ local Logger = ArenaLog.Logger
 Logger.types = {
     error = {
         msg = "ERROR",
-        color = "cffff0000"
+        color = "cffff0000",
+        isOn = true
     },
     warning = {
         msg = "WARNING",
-        color = "cfffff000"
+        color = "cfffff000",
+        isOn = true
     },
     info = {
         msg = "INFO",
-        color = "cff00ff00"
+        color = "cff00ff00",
+        isOn = true
     },
     debug = {
         msg = "DEBUG",
-        color = "cff00ff00"
+        color = "cff00ff00",
+        isOn = true
     }
 }
 
@@ -46,4 +50,8 @@ end
 
 function Logger:Debug(msg, ...)
     self:_log("debug", msg, ...)
+end
+
+function Logger:SwitchMessages(type)
+    Logger.types[type].isOn = not Logger.types[type].isOn
 end

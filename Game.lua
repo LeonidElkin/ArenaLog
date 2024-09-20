@@ -1,12 +1,11 @@
 local Game = ArenaLog.Game
 local Team = ArenaLog.Team
+local Logger = ArenaLog.Logger
 
 Game.__index = Game
 
 function Game.New()
     local self = setmetatable({}, Game)
-
-    local allied = true
 
     self.date = nil
     self.duration = nil
@@ -14,19 +13,26 @@ function Game.New()
     self.score = nil
     self.zone = nil
 
-    self.alliedTeam = Team.New(allied)
-    self.enemyTeam = Team.New(not allied)
+    self.alliedTeam = Team.New()
+    self.enemyTeam = Team.New()
 
     return self
 end
 
 function Game:UpdateTeamsInfo()
+    Logger:Debug("UPDATING TEAMS")
     self.alliedTeam:UpdateTeamInfo()
     self.enemyTeam:UpdateTeamInfo()
 end
 
+function Game:UpdateZone()
+    self.zone = GetRealZoneText()
+end
+
 function Game:Finish(winner, duration)
+    Logger:Debug("FINISHING THE GAME")
     self:UpdateTeamsInfo()
+    self:UpdateZone()
     self.score = winner
     self.date = C_DateAndTime.GetCurrentCalendarTime()
     self.duration = duration

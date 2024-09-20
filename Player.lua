@@ -1,4 +1,5 @@
 local Player = ArenaLog.Player
+local Logger = ArenaLog.Logger
 
 Player.__index = Player
 
@@ -43,7 +44,7 @@ local function IsPlayerInfoComplete(self)
 end
 
 function Player:UpdateAllyPlayerInfo(guid, unit, info)
-    if unit == self.id and IsPlayerInfoComplete(self) then
+    if unit == self.id and not IsPlayerInfoComplete(self) then
         self.guid = guid
         self.specId = info.spec_index
         self.specIcon = info.spec_icon
@@ -63,9 +64,11 @@ function Player:FullName()
 end
 
 function Player:GetPlayerArenaInfo()
+    Logger:Debug("GetPlayerArenaInfo")
     local info = C_PvP.GetScoreInfoByPlayerGuid(self.guid)
 
     if info then
+        Logger:Debug("GetPlayerArenaInfo is here")
         self.killingBlows = info.killingBlows
         self.faction = info.faction
         self.damageDone = info.damageDone
@@ -79,11 +82,15 @@ function Player:UpdateEnemyPlayerInfo()
         return
     end
 
+    Logger:Debug("UpdateEnemyPlayerInfo")
+
+    local _, _, numId = string.find(self.id, "(%d+)")
+
     self.guid = UnitGUID(self.id)
     self.name, self.server = UnitFullName(self.id)
     self.race = UnitRace(self.id)
     self.class = UnitClass(self.id)
-    self.specId, _ = GetArenaOpponentSpec(self.id)
+    self.specId, _ = GetArenaOpponentSpec(numId)
     _, _, _, self.specIcon, _, _, _ = GetSpecializationInfoByID(self.specId)
 end
 
