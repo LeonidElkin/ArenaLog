@@ -43,20 +43,18 @@ local function CreateTeamWidget(team)
     return teamGroup
 end
 
-local function CreateLabeledGroup(label, value, color)
+local function CreateLabeledGroup(label, value, color, width)
     local group = AceGUI:Create("SimpleGroup")
     group:SetLayout("List")
-    group:SetWidth(12 * max(#label, #value))
+    group:SetWidth(width)
 
-    if color then
-        value = string.format("|%s%s|r", UI.Color[color], value)
-    end
+    local font = "Fonts\\FRIZQT__.TTF"
 
     local labelWidget = AceGUI:Create("Label")
     labelWidget:SetText(label)
     labelWidget:SetJustifyH("CENTER")
     labelWidget:SetFullWidth(true)
-    labelWidget:SetFont("Fonts\\FRIZQT__.TTF", 14, "THICKOUTLINE")
+    labelWidget:SetFont(font, 14, "THICKOUTLINE")
     group:AddChild(labelWidget)
 
 
@@ -66,27 +64,29 @@ local function CreateLabeledGroup(label, value, color)
     spacer:SetHeight(5)
     group:AddChild(spacer)
 
+
+    local i, j = string.find(value, "[%w-]+")
+
+    if not (i == 1 and j == #value) then
+        font = "Fonts\\ARIALN.TTF"
+    end
+    if color then
+        value = string.format("|%s%s|r", UI.Color[color], value)
+    end
+
     local valueWidget = AceGUI:Create("Label")
     valueWidget:SetText(value)
     valueWidget:SetJustifyH("CENTER")
     valueWidget:SetFullWidth(true)
-    valueWidget:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
+    valueWidget:SetFont(font, 12, "OUTLINE")
     group:AddChild(valueWidget)
 
 
     return group
 end
 
-local function CreateGameFrame(game)
-    local singleGameFrame = AceGUI:Create("InlineGroup")
-    singleGameFrame:SetFullWidth(true)
-    singleGameFrame:SetLayout("Flow")
-
-    singleGameFrame:AddChild(CreateLabeledGroup("Date",
-        tostring(game.date.monthDay) .. "-" .. tostring(game.date.month) .. "-" .. tostring(game.date.year)))
-
-    singleGameFrame:AddChild(CreateTeamWidget(game.alliedTeam))
-
+local function CreateTeamsGroup(container, game)
+    container:AddChild(CreateTeamWidget(game.alliedTeam))
 
     local vsGroup = AceGUI:Create("SimpleGroup")
     vsGroup:SetLayout("List")
@@ -98,15 +98,24 @@ local function CreateGameFrame(game)
     vsLabel:SetFontObject(GameFontNormalLarge)
     vsGroup:AddChild(vsLabel)
 
-    singleGameFrame:AddChild(vsGroup)
+    container:AddChild(vsGroup)
 
-    singleGameFrame:AddChild(CreateTeamWidget(game.enemyTeam))
+    container:AddChild(CreateTeamWidget(game.enemyTeam))
+end
 
-    singleGameFrame:AddChild(CreateLabeledGroup("Location", game.zone))
+local function CreateGameFrame(game)
+    local singleGameFrame = AceGUI:Create("InlineGroup")
+    singleGameFrame:SetFullWidth(true)
+    singleGameFrame:SetLayout("Flow")
 
-    singleGameFrame:AddChild(CreateLabeledGroup("Duration",
-        string.format("%dm%ds", game.duration / 60, game.duration % 60)))
+    local date = tostring(game.date.monthDay) .. "-" .. tostring(game.date.month) .. "-" .. tostring(game.date.year)
+    singleGameFrame:AddChild(CreateLabeledGroup("Date", date, nil, 100))
 
+    CreateTeamsGroup(singleGameFrame, game)
+
+    singleGameFrame:AddChild(CreateLabeledGroup("Location", game.zone, nil, 200))
+
+    singleGameFrame:AddChild(CreateLabeledGroup("Duration", game.duration, nil, 100))
 
     local score, color
     if game.score == game.alliedTeam.teamIndex then
@@ -115,17 +124,11 @@ local function CreateGameFrame(game)
         score, color = "LOSE", "red"
     end
 
-    singleGameFrame:AddChild(CreateLabeledGroup("Result", score, color))
-
-    if game.alliedTeam.players.player.ratingChange > 0 then
-        color = "green"
-    else
-        color = "red"
-    end
-
+    singleGameFrame:AddChild(CreateLabeledGroup("Result", score, color, 60))
 
     singleGameFrame:AddChild(CreateLabeledGroup("Rating Change", tostring(game.alliedTeam.players.player.ratingChange),
-        color))
+        color, 140))
+
 
     return singleGameFrame
 end
@@ -146,17 +149,51 @@ function UI:CreateArenaHistoryWidget(container, group)
 
     for i = #games, 1, -1 do
         Logger:Debug("Drawing game %d", i)
-        ArenaLog:Print(games[i].type)
         if games[i].type == tonumber(group) then
             scroll:AddChild(CreateGameFrame(games[i]))
         end
     end
 end
 
+local function CreateCheckBox(label, type)
+    local checkBox = AceGUI:Create("CheckBox")
+    checkBox:SetLabel(label)
+    checkBox:SetValue(ArenaLog.db.char.loggerModes[type])
+    checkBox:SetCallback("OnValueChanged", function (widget, event, value) ArenaLog.db.char.loggerModes[type] = value end)
+    return checkBox
+end
+
+function UI:CreateSettingsWidget(container)
+    local settingsWidget = AceGUI:Create("SimpleGroup")
+    settingsWidget:SetFullWidth(true)
+    settingsWidget:SetFullHeight(true)
+    settingsWidget:SetLayout("Fill")
+    container:AddChild(settingsWidget)
+
+    local scroll = AceGUI:Create("ScrollFrame")
+    scroll:SetLayout("Flow")
+    settingsWidget:AddChild(scroll)
+
+    scroll:AddChild(CreateCheckBox("Enable error messages", "error"))
+    scroll:AddChild(CreateCheckBox("Enable info messages", "info"))
+    scroll:AddChild(CreateCheckBox("Enable warning messages", "warning"))
+
+    local button = AceGUI:Create("Button")
+    button:SetText("Reset games history?")
+    button:SetWidth(200)
+    button:SetCallback("OnClick", function ()
+        ArenaLog.db.char.gameHistory = {}
+        Logger:Info("Games history was reseted")
+    end)
+    scroll:AddChild(button)
+end
+
 local function SelectGroup(container, event, group)
     container:ReleaseChildren()
     if group == "2" or group == "3" then
         UI:CreateArenaHistoryWidget(container, group)
+    elseif group == "Settings" then
+        UI:CreateSettingsWidget(container)
     end
 end
 
@@ -183,8 +220,9 @@ function UI:InitiateMainFrame()
     local tab = AceGUI:Create("TabGroup")
     tab:SetLayout("Fill")
     tab:SetTabs({
-        { text = "2x2", value = "2" },
-        { text = "3x3", value = "3" }
+        { text = "2x2",      value = "2" },
+        { text = "3x3",      value = "3" },
+        { text = "Settings", value = "Settings" }
     })
     tab:SetCallback("OnGroupSelected", SelectGroup)
     tab:SelectTab("2")

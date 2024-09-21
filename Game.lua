@@ -35,6 +35,6 @@ function Game:Finish(winner, duration)
     self:UpdateZone()
     self.score = winner
     self.date = C_DateAndTime.GetCurrentCalendarTime()
-    self.duration = duration
+    self.duration = string.format("%dm%ds", duration / 60, duration % 60)
     self.type = math.max(self.alliedTeam.size, self.enemyTeam.size)
 end
