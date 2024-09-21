@@ -19,7 +19,7 @@ Logger.types = {
     debug = {
         msg = "DEBUG",
         color = "cff00ff00",
-        isOn = true
+        isOn = false
     }
 }
 

@@ -81,7 +81,6 @@ local function CreateGameFrame(game)
     local singleGameFrame = AceGUI:Create("InlineGroup")
     singleGameFrame:SetFullWidth(true)
     singleGameFrame:SetLayout("Flow")
-    Logger:Debug("Drawing singleGameFrame ")
 
     singleGameFrame:AddChild(CreateLabeledGroup("Date",
         tostring(game.date.monthDay) .. "-" .. tostring(game.date.month) .. "-" .. tostring(game.date.year)))
