@@ -33,25 +33,25 @@ function Logger:_log(type, msg, ...)
 end
 
 function Logger:Error(msg, ...)
-    if self.types.error.isOn then
+    if ArenaLog.db.char.loggerModes.error then
         self:_log("error", msg, ...)
     end
 end
 
 function Logger:Warning(msg, ...)
-    if self.types.warning.isOn then
+    if ArenaLog.db.char.loggerModes.warning then
         self:_log("warning", msg, ...)
     end
 end
 
 function Logger:Info(msg, ...)
-    if self.types.info.isOn then
+    if ArenaLog.db.char.loggerModes.info then
         self:_log("info", msg, ...)
     end
 end
 
 function Logger:Debug(msg, ...)
-    if self.types.debug.isOn then
+    if ArenaLog.db.char.loggerModes.debug then
         self:_log("debug", msg, ...)
     end
 end

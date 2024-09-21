@@ -18,7 +18,7 @@ function ArenaLog:SetUpDb()
         self.db.char.gameHistory = {}
     end
     self.db.char.loggerModes = self.db.char.loggerModes or { error = true, warning = true, info = true, debug = false }
-    self.db.char.currentMatch = self.db.char.currentMatch or nil
+    self.db.char.currentMatch = nil
 end
 
 function ArenaLog:OnInitialize()
@@ -30,14 +30,27 @@ function ArenaLog:OnEnable()
     ArenaLog:RegisterChatCommand("arenalog", "HandleSlashCommands")
     ArenaLog:RegisterChatCommand("al", "HandleSlashCommands")
 
+    ArenaLog.isInMatch = false
+
     ArenaLog:RegisterEvent("PVP_MATCH_COMPLETE")
     ArenaLog:RegisterEvent("PLAYER_ENTERING_WORLD")
+    ArenaLog:RegisterEvent("PLAYER_JOINED_PVP_MATCH")
     ArenaLog:RegisterEvent("ARENA_OPPONENT_UPDATE")
 
     LGIST.RegisterCallback(ArenaLog, "GroupInSpecT_Update", "ARENA_ALLY_UPDATE")
 end
 
 -- Events handlers
+
+function ArenaLog:PLAYER_JOINED_PVP_MATCH(event)
+    Logger:Debug("PLAYER_JOINED_PVP_MATCH")
+    if ArenaLog.isInMatch then
+        ArenaLog.isInMatch = false
+        return
+    end
+
+    ArenaLog:OnArenaStart()
+end
 
 function ArenaLog:PLAYER_ENTERING_WORLD(event, _, _)
     Logger:Debug("PLAYER_ENTERING_WORLD")
@@ -88,6 +101,7 @@ end
 
 function ArenaLog:OnArenaEnd(winner, duration)
     if self.db.char.currentMatch ~= nil then
+        ArenaLog.isInMatch = true
         self.db.char.currentMatch:Finish(winner, duration)
         self.db.char.gameHistory[#self.db.char.gameHistory + 1] = self.db.char.currentMatch
         self.db.char.currentMatch = nil

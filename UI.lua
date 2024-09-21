@@ -202,6 +202,8 @@ function UI:InitiateMainFrame()
         return
     end
 
+    Logger:Debug("InitiateMainFrame")
+
     UI.isMainFrameShown = true
 
     local frame = AceGUI:Create("Frame")
