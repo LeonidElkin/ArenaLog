@@ -12,4 +12,4 @@ Just write to the chat `/al` or `/arenalog` to use the addon
 
 ## Get started
 
-Download the latest version of the addon via [github releases](https://github.com/LeonidElkin/ArenaLog/releases) or [CurseForge]([https://legacy.curseforge.com/wow/addons/arenalog](https://legacy.curseforge.com/wow/addons/arenalog/files))
+Download the latest version of the addon via [github releases](https://github.com/LeonidElkin/ArenaLog/releases) or [CurseForge](https://legacy.curseforge.com/wow/addons/arenalog/files)
