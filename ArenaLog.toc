@@ -11,7 +11,6 @@
 embeds.xml
 
 Header.lua
-Locales.lua
 Core.lua
 Logger.lua
 UI.lua
