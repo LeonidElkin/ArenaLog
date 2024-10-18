@@ -24,6 +24,7 @@ end
 function ArenaLog:OnInitialize()
     self.db = AceDB:New("ArenaLogDB")
     ArenaLog:SetUpDb()
+    self.db.char.loggerModes.debug = false
 end
 
 function ArenaLog:OnEnable()

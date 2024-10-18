@@ -3,7 +3,6 @@
 ## Notes: ArenaLog allows you to check your arena rating changes and see additional information about battles
 ## Author: FerventReaper
 ## Version: 1.0
-## RequiredDeps: Ace3, CallbackHandler-1.0, LibGroupInSpecT-1.1
 ## X-Curse-Project-ID: 1106523
 ## SavedVariables: ArenaLogDB
 
